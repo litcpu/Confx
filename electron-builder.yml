@@ -1,0 +1,9 @@
+appId: cn.agent.manager.desktop
+productName: Agent Manager
+directories:
+  output: release
+files:
+  - dist/**/*
+  - package.json
+win:
+  target: nsis
