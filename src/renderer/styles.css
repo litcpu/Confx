@@ -332,6 +332,77 @@ td strong {
   background: #ffffff;
 }
 
+.folder-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  margin-bottom: 10px;
+}
+
+.folder-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 8px;
+  background: var(--panel-soft);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.folder-back:hover:not(:disabled) {
+  color: var(--text);
+  background: #ececef;
+}
+
+.folder-back:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.folder-path {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.file-entry svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.file-entry.clickable {
+  cursor: pointer;
+}
+
+.file-entry.clickable:hover strong {
+  color: var(--accent);
+}
+
+.file-entry:disabled {
+  cursor: default;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

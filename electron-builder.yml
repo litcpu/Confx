@@ -1,5 +1,5 @@
-appId: cn.agent.manager.desktop
-productName: Agent Manager
+appId: cn.confx
+productName: Confx
 directories:
   output: release
 files:

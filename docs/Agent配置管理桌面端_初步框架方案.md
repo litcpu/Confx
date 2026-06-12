@@ -100,7 +100,7 @@ Electron 主进程可以直接处理：
 ## 4. 总体架构
 
 ```text
-Agent Manager Desktop
+Confx
 ├─ Electron Main Process
 │  ├─ IPC API
 │  ├─ Agent Adapters
@@ -141,7 +141,7 @@ Agent Adapter 写回对应配置
 ## 5. 推荐目录结构
 
 ```text
-agent-manager-desktop
+confx
 ├─ package.json
 ├─ vite.config.ts
 ├─ electron-builder.yml

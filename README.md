@@ -1,6 +1,6 @@
-# Agent Manager Desktop
+# Confx
 
-Agent Manager Desktop 是一个用于统一管理本机 AI Agent 配置的桌面端 MVP。项目目标是把 Claude Code、Codex 等工具隐藏在用户目录中的 MCP、Skills 和配置文件可视化，降低手动编辑 JSON、TOML、Markdown 配置的风险。
+Confx 是一个用于统一管理本机 AI Agent 配置的桌面端 MVP。项目目标是把 Claude Code、Codex 等工具隐藏在用户目录中的 MCP、Skills 和配置文件可视化，降低手动编辑 JSON、TOML、Markdown 配置的风险。
 
 当前版本优先实现只读扫描和基础备份能力，适合作为后续 MCP 启用/禁用、Skills 同步、配置恢复等功能的初始框架。
 
@@ -131,7 +131,7 @@ npm run start
 │  └─ shared
 │     ├─ schemas
 │     └─ types
-└─ Agent配置管理桌面端_初步框架方案.md
+└─ docs/Agent配置管理桌面端_初步框架方案.md
 ```
 
 ## 核心设计

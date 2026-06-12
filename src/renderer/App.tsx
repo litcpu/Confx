@@ -1,17 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  ArchiveRestore,
-  Bot,
-  Boxes,
-  DatabaseBackup,
-  LayoutDashboard,
-  RefreshCcw,
-  Settings,
-  ShieldAlert,
-  Sparkles
-} from "lucide-react";
-import type { AgentInstallStatus } from "../shared/types/agent";
-import type { AgentApp } from "../shared/types/agent";
+import { ArchiveRestore, Bot, Boxes, ChevronLeft, DatabaseBackup, FileText, Folder, FolderSearch, LayoutDashboard, RefreshCcw, Settings, ShieldAlert, Sparkles } from "lucide-react";
+import type { AgentInstallStatus, AgentApp } from "../shared/types/agent";
 import type { BackupRecord } from "../shared/types/backup";
 import type { ConfigFileItem } from "../shared/types/config-file";
 import type { McpServer } from "../shared/types/mcp";
@@ -21,10 +10,11 @@ import geminiIcon from "./assets/icons/gemini.svg";
 import openAiIcon from "./assets/icons/openai.svg";
 import openCodeIcon from "./assets/icons/opencode.svg";
 
-type Page = "dashboard" | "mcp" | "skills" | "backup" | "settings";
+type Page = "dashboard" | "discover" | "mcp" | "skills" | "backup" | "settings";
 
 const pages: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }> = [
   { id: "dashboard", label: "总览", icon: LayoutDashboard },
+  { id: "discover", label: "配置发现", icon: FolderSearch },
   { id: "mcp", label: "MCP", icon: Boxes },
   { id: "skills", label: "Skills", icon: Sparkles },
   { id: "backup", label: "备份", icon: DatabaseBackup },
@@ -84,7 +74,7 @@ export default function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="header-left">
-          <div className="brand-name">Agent Manager</div>
+          <div className="brand-name">Confx</div>
         </div>
 
         <nav className="nav">
@@ -101,7 +91,7 @@ export default function App() {
       </header>
 
       <main className="workspace">
-        {activePage !== "mcp" && activePage !== "skills" ? (
+        {!["discover", "mcp", "skills"].includes(activePage) ? (
           <header className="topbar">
             <div>
               <h1>{pageTitle(activePage)}</h1>
@@ -116,6 +106,7 @@ export default function App() {
         {error ? <div className="error-banner">{error}</div> : null}
 
         {activePage === "dashboard" && <Dashboard agents={agents} mcpServers={mcpServers} skills={skills} configFiles={configFiles} backups={backups} stats={stats} />}
+        {activePage === "discover" && <ConfigDiscoveryPage configFiles={configFiles} loading={loading} onRefresh={refresh} />}
         {activePage === "mcp" && <McpPage servers={mcpServers} loading={loading} onRefresh={refresh} />}
         {activePage === "skills" && <SkillsPage skills={skills} loading={loading} onRefresh={refresh} />}
         {activePage === "backup" && <BackupPage backups={backups} agents={agents} onBackup={refresh} />}
@@ -172,20 +163,98 @@ function Dashboard({
           </div>
         </Panel>
       </div>
+    </section>
+  );
+}
 
-      <Panel title="AI 配置文件" icon={<DatabaseBackup size={18} />}>
-        <DataTable
-          empty="暂未发现 AI 配置文件"
-          columns={["名称", "关联工具", "类型", "更新时间", "路径"]}
-          rows={configFiles.map((item) => [
-            <strong>{item.name}</strong>,
-            item.appHint,
-            item.type === "directory" ? "目录" : "文件",
-            item.updatedAt ? formatTime(item.updatedAt) : "未知",
-            <span className="path-text">{item.path}</span>
-          ])}
-        />
-      </Panel>
+function ConfigDiscoveryPage({ configFiles, loading, onRefresh }: { configFiles: ConfigFileItem[]; loading: boolean; onRefresh: () => Promise<void> }) {
+  const [currentPath, setCurrentPath] = useState<string | null>(null);
+  const [items, setItems] = useState<ConfigFileItem[]>(configFiles);
+  const [history, setHistory] = useState<string[]>([]);
+  const [folderLoading, setFolderLoading] = useState(false);
+
+  useEffect(() => {
+    if (!currentPath) {
+      setItems(configFiles);
+    }
+  }, [configFiles, currentPath]);
+
+  async function openItem(item: ConfigFileItem) {
+    if (item.type !== "directory") {
+      return;
+    }
+
+    setFolderLoading(true);
+    try {
+      const listDirectory = window.agentManager.listDirectory ?? (() => Promise.resolve([]));
+      const children = await listDirectory(item.path);
+      setHistory((previous) => (currentPath ? [...previous, currentPath] : previous));
+      setCurrentPath(item.path);
+      setItems(children);
+    } finally {
+      setFolderLoading(false);
+    }
+  }
+
+  async function goBack() {
+    const previousPath = history[history.length - 1];
+
+    if (!previousPath) {
+      setCurrentPath(null);
+      setItems(configFiles);
+      setHistory([]);
+      return;
+    }
+
+    setFolderLoading(true);
+    try {
+      const listDirectory = window.agentManager.listDirectory ?? (() => Promise.resolve([]));
+      const children = await listDirectory(previousPath);
+      setCurrentPath(previousPath);
+      setItems(children);
+      setHistory((previous) => previous.slice(0, -1));
+    } finally {
+      setFolderLoading(false);
+    }
+  }
+
+  return (
+    <section className="list-section">
+      <div className="panel-header">
+        <div className="panel-title">
+          <FolderSearch size={18} />
+          <h2>AI 配置文件</h2>
+        </div>
+        <div className="panel-action">
+          <button className="primary-action" onClick={() => void onRefresh()} disabled={loading}>
+            <RefreshCcw size={17} />
+            {loading ? "扫描中" : "重新扫描"}
+          </button>
+        </div>
+      </div>
+      <div className="folder-toolbar">
+        <button className="folder-back" onClick={() => void goBack()} disabled={!currentPath || folderLoading}>
+          <ChevronLeft size={16} />
+          返回
+        </button>
+        <span className="folder-path">{currentPath || "AI 配置文件根列表"}</span>
+      </div>
+      <DataTable
+        className="hidden-scrollbar"
+        empty="暂未发现 AI 配置文件"
+        columns={["名称", "关联工具", "类型", "大小", "更新时间", "路径"]}
+        rows={items.map((item) => [
+          <button className={`file-entry ${item.type === "directory" ? "clickable" : ""}`} onClick={() => void openItem(item)} disabled={item.type !== "directory" || folderLoading}>
+            {item.type === "directory" ? <Folder size={16} /> : <FileText size={16} />}
+            <strong>{item.name}</strong>
+          </button>,
+          item.appHint,
+          item.type === "directory" ? "目录" : "文件",
+          typeof item.size === "number" ? formatSize(item.size) : "-",
+          item.updatedAt ? formatTime(item.updatedAt) : "未知",
+          <span className="path-text">{item.path}</span>
+        ])}
+      />
     </section>
   );
 }
@@ -402,6 +471,7 @@ function SettingItem({ label, value }: { label: string; value: string }) {
 function pageTitle(page: Page): string {
   return {
     dashboard: "配置总览",
+    discover: "配置发现",
     mcp: "MCP 管理",
     skills: "Skills 管理",
     backup: "备份恢复",
@@ -416,4 +486,16 @@ function formatTime(value: string): string {
     hour: "2-digit",
     minute: "2-digit"
   }).format(new Date(value));
+}
+
+function formatSize(size: number): string {
+  if (size < 1024) {
+    return `${size} B`;
+  }
+
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(size / 1024 / 1024).toFixed(1)} MB`;
 }

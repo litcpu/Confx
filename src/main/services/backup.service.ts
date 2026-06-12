@@ -9,7 +9,7 @@ export class BackupService {
       throw new Error(`路径不存在：${sourcePath}`);
     }
 
-    const backupRoot = homePath(".agent-manager", "backups", "manual", new Date().toISOString().replace(/[:.]/g, "-"));
+    const backupRoot = homePath(".confx", "backups", "manual", new Date().toISOString().replace(/[:.]/g, "-"));
     const backupPath = path.join(backupRoot, path.basename(sourcePath));
     await fs.copy(sourcePath, backupPath);
 
@@ -24,7 +24,7 @@ export class BackupService {
   }
 
   async list(): Promise<BackupRecord[]> {
-    const root = homePath(".agent-manager", "backups");
+    const root = homePath(".confx", "backups");
 
     if (!(await fs.pathExists(root))) {
       return [];

@@ -9,6 +9,7 @@ export interface AgentManagerApi {
   listMcp(): Promise<McpServer[]>;
   listSkills(): Promise<Skill[]>;
   listAiConfigFiles(): Promise<ConfigFileItem[]>;
+  listDirectory(path: string): Promise<ConfigFileItem[]>;
   listBackups(): Promise<BackupRecord[]>;
   createBackup(sourcePath: string, reason?: string): Promise<BackupRecord>;
 }

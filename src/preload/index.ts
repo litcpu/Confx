@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld("agentManager", {
   listMcp: () => ipcRenderer.invoke("mcp:list"),
   listSkills: () => ipcRenderer.invoke("skills:list"),
   listAiConfigFiles: () => ipcRenderer.invoke("config-files:list-ai"),
+  listDirectory: (targetPath: string) => ipcRenderer.invoke("config-files:list-directory", targetPath),
   listBackups: () => ipcRenderer.invoke("backups:list"),
   createBackup: (sourcePath: string, reason?: string) => ipcRenderer.invoke("backups:create", sourcePath, reason),
   syncMcp: (_apps?: AgentApp[]) => Promise.reject(new Error("MCP 同步将在下一阶段实现。")),

@@ -44,6 +44,30 @@ export class ConfigFileScanService {
     return dedupe(results).sort((a, b) => a.path.localeCompare(b.path));
   }
 
+  async listDirectory(targetPath: string): Promise<ConfigFileItem[]> {
+    let entries: fs.Dirent[];
+    try {
+      entries = await fs.readdir(targetPath, { withFileTypes: true });
+    } catch {
+      return [];
+    }
+
+    const items = await Promise.all(
+      entries.map((entry) => {
+        const fullPath = path.join(targetPath, entry.name);
+        return toConfigFileItem(fullPath, entry, targetNames.get(entry.name.toLowerCase()) ?? inferAppHint(fullPath));
+      })
+    );
+
+    return items.sort((a, b) => {
+      if (a.type !== b.type) {
+        return a.type === "directory" ? -1 : 1;
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+  }
+
   private async scanDirectory(currentPath: string, results: ConfigFileItem[], depth: number): Promise<void> {
     if (depth > 4 || results.length >= 500) {
       return;
@@ -98,4 +122,16 @@ async function toConfigFileItem(fullPath: string, entry: fs.Dirent, appHint: str
 
 function dedupe(items: ConfigFileItem[]): ConfigFileItem[] {
   return Array.from(new Map(items.map((item) => [item.path.toLowerCase(), item])).values());
+}
+
+function inferAppHint(fullPath: string): string {
+  const normalized = fullPath.toLowerCase();
+
+  for (const [name, appHint] of targetNames.entries()) {
+    if (normalized.includes(`${path.sep}${name}${path.sep}`) || normalized.endsWith(`${path.sep}${name}`)) {
+      return appHint;
+    }
+  }
+
+  return "配置内容";
 }

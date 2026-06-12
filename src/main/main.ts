@@ -30,7 +30,7 @@ async function createWindow(): Promise<void> {
     minWidth: 980,
     minHeight: 680,
     backgroundColor: "#101418",
-    title: "Agent Manager",
+    title: "Confx",
     icon: appIconPath,
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.js"),

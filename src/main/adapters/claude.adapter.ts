@@ -84,7 +84,7 @@ export class ClaudeAdapter implements AppAdapter {
 
   async backup(reason = "manual"): Promise<BackupRecord[]> {
     const records: BackupRecord[] = [];
-    const backupRoot = homePath(".agent-manager", "backups", this.appId, new Date().toISOString().replace(/[:.]/g, "-"));
+    const backupRoot = homePath(".confx", "backups", this.appId, new Date().toISOString().replace(/[:.]/g, "-"));
 
     for (const sourcePath of [this.configFile, this.configDir]) {
       if (!(await pathExists(sourcePath))) {
